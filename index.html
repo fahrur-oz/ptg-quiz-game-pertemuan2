@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Adventure - Pengantar Teknologi Game Pertemuan 2</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --bg-gradient: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e293b 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #1f2937;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            position: relative;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header / HUD */
+        .hud {
+            background: #111827;
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--primary);
+        }
+
+        .hud-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+
+        .hud-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #f3f4f6;
+        }
+
+        .hearts {
+            color: var(--error);
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: #e5e7eb;
+            height: 8px;
+            width: 100%;
+            position: relative;
+        }
+
+        .progress-bar {
+            background: var(--primary);
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 30px;
+        }
+
+        /* Screen Styling */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        h1 {
+            color: #1e1b4b;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #4b5563;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        /* Form Group */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            background-color: #fff;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Buttons */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Map / Adventure Visual */
+        .map-banner {
+            background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 2px dashed var(--primary);
+        }
+
+        .map-banner span {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* Lifelines Container */
+        .lifelines-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .lifeline-btn {
+            flex: 1;
+            padding: 10px;
+            background: #e0e7ff;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .lifeline-btn:hover:not(:disabled) {
+            background: var(--primary);
+            color: white;
+        }
+
+        .lifeline-btn:disabled {
+            background: #e5e7eb;
+            border-color: #9ca3af;
+            color: #9ca3af;
+            cursor: not-allowed;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        /* Modal / Auxiliary Boxes for Lifelines */
+        .lifeline-box {
+            background: #eff6ff;
+            border-left: 5px solid #3b82f6;
+            padding: 15px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 0.95rem;
+            color: #1e3a8a;
+        }
+
+        .lifeline-box.show {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        .audience-bars {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .audience-bar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+
+        .audience-bar-bg {
+            flex: 1;
+            background: #dbeafe;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .audience-bar-fill {
+            background: #2563eb;
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Quiz Question Styles */
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            background: #f3f4f6;
+            border: 2px solid #e5e7eb;
+            padding: 14px 18px;
+            border-radius: 10px;
+            text-align: left;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: #e0e7ff;
+            border-color: var(--primary);
+        }
+
+        .option-btn.correct {
+            background: #d1fae5 !important;
+            border-color: var(--success) !important;
+            color: #065f46 !important;
+            animation: bounce 0.4s;
+        }
+
+        .option-btn.incorrect {
+            background: #fee2e2 !important;
+            border-color: var(--error) !important;
+            color: #991b1b !important;
+            animation: shake 0.4s;
+        }
+
+        .option-btn.hidden-option {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        /* Explanation Box */
+        .explanation-box {
+            background: #f8fafc;
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 0.95rem;
+            color: #334155;
+        }
+
+        .explanation-box.show {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        /* Results Screen Styles */
+        .results-card {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 1rem;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .result-value {
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .badge-gold { background: #fef3c7; color: #d97706; }
+        .badge-silver { background: #f1f5f9; color: #475569; }
+        .badge-bronze { background: #ffedd5; color: #c2410c; }
+        .badge-fail { background: #fee2e2; color: #b91c1c; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- HUD / Status Bar -->
+        <div class="hud" id="hud" style="display: none;">
+            <div class="hud-item">
+                <span>SKOR</span>
+                <span class="hud-value" id="scoreDisplay">0</span>
+            </div>
+            <div class="hud-item">
+                <span>NYAWA</span>
+                <span class="hearts" id="heartsDisplay">❤️❤️❤️</span>
+            </div>
+            <div class="hud-item">
+                <span>MISI</span>
+                <span class="hud-value" id="progressDisplay">1 / 20</span>
+            </div>
+        </div>
+        <div class="progress-container" id="progressContainer" style="display: none;">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="content">
+            
+            <!-- SCREEN 1: REGISTRASI (Nama, NPM, & Kelas) -->
+            <div id="screenRegistration" class="screen active">
+                <h1>🎮 Quiz Adventure</h1>
+                <p class="subtitle">Pengantar Teknologi Game - Pertemuan 2</p>
+                
+                <div class="map-banner">
+                    🗺️ Jelajahi dunia game, taklukkan tantangan, dan kumpulkan skor tertinggi dalam ekspedisi materi kuliah!
+                </div>
+
+                <form id="regForm" onsubmit="startAdventure(event)">
+                    <div class="form-group">
+                        <label for="inputName">Nama Lengkap</label>
+                        <input type="text" id="inputName" placeholder="Masukkan nama Anda..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputNpm">NPM (Nomor Pokok Mahasiswa)</label>
+                        <input type="text" id="inputNpm" placeholder="Masukkan NPM Anda..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputClass">Kelas</label>
+                        <select id="inputClass" required>
+                            <option value="" disabled selected>Pilih kelas Anda...</option>
+                            <option value="Kelas 1C">Kelas 1C</option>
+                            <option value="Kelas 1D">Kelas 1D</option>
+                            <option value="Kelas 1E">Kelas 1E</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">Mulai Petualangan 🚀</button>
+                </form>
+            </div>
+
+            <!-- SCREEN 2: PERTANYAAN QUIZ -->
+            <div id="screenQuiz" class="screen">
+                <div class="map-banner" id="mapStageInfo">
+                    📍 Pos Petualangan: Pertanyaan 1 dari 20
+                </div>
+
+                <!-- Lifelines / Bantuan -->
+                <div class="lifelines-container">
+                    <button class="lifeline-btn" id="btnLifeline5050" onclick="use5050()">
+                        ⚖️ 50:50
+                    </button>
+                    <button class="lifeline-btn" id="btnLifelineAudience" onclick="useAudience()">
+                        👥 Audience
+                    </button>
+                    <button class="lifeline-btn" id="btnLifelineHint" onclick="useHint()">
+                        💡 Hint
+                    </button>
+                </div>
+
+                <!-- Lifeline Output Boxes -->
+                <div class="lifeline-box" id="audienceBox">
+                    <strong>📊 Hasil Voting Penonton:</strong>
+                    <div class="audience-bars" id="audienceBars"></div>
+                </div>
+
+                <div class="lifeline-box" id="hintBox">
+                    <strong>💡 Petunjuk (Hint):</strong> <span id="hintText"></span>
+                </div>
+                
+                <div class="question-text" id="questionText">
+                    Pertanyaan akan muncul di sini...
+                </div>
+
+                <div class="options-grid" id="optionsContainer">
+                    <!-- Opsi jawaban akan di-generate via JS -->
+                </div>
+
+                <div class="explanation-box" id="explanationBox">
+                    <strong>💡 Penjelasan:</strong> <span id="explanationText"></span>
+                </div>
+
+                <button class="btn" id="nextButton" style="display: none;" onclick="nextQuestion()">Lanjutkan Perjalanan ➡️</button>
+            </div>
+
+            <!-- SCREEN 3: HALAMAN HASIL (RESULT) -->
+            <div id="screenResult" class="screen">
+                <h1>🏆 Petualangan Selesai!</h1>
+                <p class="subtitle">Laporan Hasil Ekspedisi Pembelajaran</p>
+
+                <div class="results-card">
+                    <div class="result-row">
+                        <span class="result-label">Nama Pemain</span>
+                        <span class="result-value" id="resName">-</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">NPM</span>
+                        <span class="result-value" id="resNpm">-</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Kelas</span>
+                        <span class="result-value" id="resClass">-</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Skor Akhir</span>
+                        <span class="result-value" id="resScore">0 / 100</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Status Nyawa</span>
+                        <span class="result-value" id="resLives">❤️❤️❤️</span>
+                    </div>
+                    <div class="result-row" style="flex-direction: column; gap: 5px; align-items: flex-start;">
+                        <span class="result-label">Predikat Pencapaian</span>
+                        <div id="resBadgeContainer">
+                            <span class="badge badge-gold" id="resBadge">Master Game Explorer</span>
+                        </div>
+                    </div>
+                </div>
+				<div id="statusSimpan" style="text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 0.95rem;"></div>
+                <button class="btn" onclick="restartGame()">🔄 Mainkan Lagi / Ulangi Petualangan</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Bank 20 Soalan Materi Pengantar Teknologi Game (Pertemuan 2) dengan Hint
+        // Ganti URL di bawah dengan Web App URL dari Google Apps Script Anda
+		const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxq4aQMRq07E1RTujv77M8geBat93hceXF_p9_71yTQvB7N5nzEpAAeQ8JaZcRW4Rl0MA/exec";
+		const questionsBank = [
+            {
+                q: "Apa definisi dasar dari sebuah game?",
+                options: [
+                    "Aktivitas menonton visual bergerak tanpa interaksi",
+                    "Aktivitas bermain yang memiliki aturan dan tujuan serta interaksi antara pemain dan sistem",
+                    "Semua bentuk hiburan yang menggunakan layar digital",
+                    "Aktivitas fisik kompetitif yang mengandalkan tenaga semata"
+                ],
+                answer: 1,
+                hint: "Cari opsi yang menekankan keberadaan 'aturan', 'tujuan', serta 'interaksi'.",
+                explanation: "Game adalah aktivitas bermain yang memiliki aturan dan tujuan, serta melibatkan interaksi aktif antara pemain dan sistem."
+            },
+            {
+                q: "Manakah di bawah ini yang TIDAK termasuk dalam contoh permainan tradisional?",
+                options: ["Congklak", "Engklek", "Monopoli", "Petak umpet"],
+                answer: 2,
+                hint: "Pikirkan permainan papan komersial buatan pabrik modern.",
+                explanation: "Monopoli adalah contoh permainan papan (board game), sedangkan congklak, engklek, dan petak umpet adalah permainan tradisional."
+            },
+            {
+                q: "Apa perbedaan utama antara permainan tradisional dan video game?",
+                options: [
+                    "Permainan tradisional tidak memiliki aturan sama sekali",
+                    "Video game memanfaatkan sistem komputasi (hardware & software) dan layar digital",
+                    "Video game tidak membutuhkan pemain manusia",
+                    "Permainan tradisional selalu dimainkan secara online"
+                ],
+                answer: 1,
+                hint: "Perhatikan penggunaan perangkat elektronik dan layar komputasi.",
+                explanation: "Perubahan utamanya terletak pada media (benda fisik ke layar digital) dan interaksi yang digerakkan oleh sistem komputer/elektronik."
+            },
+            {
+                q: "Apa yang dimaksud dengan respons 'Haptic' pada interaksi video game?",
+                options: [
+                    "Suara ledakan yang keluar dari speaker",
+                    "Perubahan warna visual secara tiba-tiba di layar",
+                    "Respons getaran pada perangkat input (misalnya controller yang bergetar)",
+                    "Kecepatan pemrosesan frame rate game"
+                ],
+                answer: 2,
+                hint: "Istilah ini berkaitan dengan indera peraba/sentuhan fisik.",
+                explanation: "Haptic merujuk pada umpan balik sentuhan atau getaran, seperti controller yang bergetar saat karakter terkena serangan."
+            },
+            {
+                q: "Berikut ini yang merupakan 7 elemen dasar sebuah game adalah...",
+                options: [
+                    "Player, Rules, Goal, Challenge, Interaction, Feedback, Reward",
+                    "Grafis, Cerita, Suara, Durasi, Harga, Genre, Developer",
+                    "CPU, RAM, GPU, Monitor, Keyboard, Mouse, OS",
+                    "Level, Skor, Nyawa, Musuh, Waktu, Item, Peta"
+                ],
+                answer: 0,
+                hint: "Dimulai dari pemain (Player) hingga hasil positif (Reward).",
+                explanation: "Tujuh elemen dasar game yang menjadi kerangka analisis adalah Player, Rules, Goal, Challenge, Interaction, Feedback, dan Reward."
+            },
+            {
+                q: "Bagaimana alur kerja sistem sebuah game bekerja berdasarkan siklus interaksi?",
+                options: [
+                    "System → Output → Player → Rules",
+                    "Player → Input → Game System → Output / Feedback",
+                    "Reward → Challenge → Goal → Player",
+                    "Developer → Publisher → Store → Player"
+                ],
+                answer: 1,
+                hint: "Aksi pemain diawali pemberian perintah (input) lalu diproses sistem.",
+                explanation: "Siklus kerja game dimulai dari Player memberikan Input, diproses oleh Game System sesuai Rules, lalu menghasilkan Output/Feedback."
+            },
+            {
+                q: "Mengapa elemen 'Feedback' sangat penting dalam sebuah game?",
+                options: [
+                    "Agar ukuran file game menjadi lebih kecil",
+                    "Agar pemain tahu apakah tindakannya berhasil atau gagal sehingga tidak cepat bosan",
+                    "Untuk menentukan harga jual game di pasaran",
+                    "Sebagai pengganti aturan (rules) permainan"
+                ],
+                answer: 1,
+                hint: "Feedback berfungsi memberi tahu dampak tindakan pemain di dalam game.",
+                explanation: "Tanpa feedback, pemain tidak tahu apakah tindakannya berhasil, sehingga mereka akan cepat kehilangan minat."
+            },
+            {
+                q: "Manakah karakteristik game yang berarti 'pilihan bermakna yang memengaruhi kondisi game'?",
+                options: ["Interaktif", "Keputusan pemain", "Challenge (Tantangan)", "Rules (Aturan)"],
+                answer: 1,
+                hint: "Berkaitan langsung dengan apa yang dipilih atau ditentukan oleh Player.",
+                explanation: "Keputusan pemain (player decision) menghasilkan pilihan bermakna (meaningful choices) yang mengubah arah dan kondisi permainan."
+            },
+            {
+                q: "Contoh jenis interaksi dalam game di mana pemain memecahkan teka-teki disebut...",
+                options: ["Movement", "Combat", "Puzzle", "Dialogue"],
+                answer: 2,
+                hint: "Istilah bahasa Inggris untuk teka-teki.",
+                explanation: "Puzzle berkaitan dengan pemecahan teka-teki, sedangkan movement untuk gerak, combat untuk bertarung, dan dialogue untuk percakapan."
+            },
+            {
+                q: "Apa fungsi utama dari elemen 'Goal' dalam sebuah game?",
+                options: [
+                    "Memberikan batasan tindakan pemain",
+                    "Memberikan arah atau tujuan akhir yang ingin dicapai pemain",
+                    "Menjadi hambatan yang sulit dilewati",
+                    "Memberikan imbalan berupa skor"
+                ],
+                answer: 1,
+                hint: "Kata 'Goal' berarti target atau sasaran yang disasar.",
+                explanation: "Goal memberikan arah bagi pemain, seperti menyelesaikan level atau mengalahkan lawan."
+            },
+            {
+                q: "Apa fungsi dari 'Reward' bagi pemain?",
+                options: [
+                    "Membuat game menjadi lebih lambat",
+                    "Memberikan alasan atau motivasi untuk terus bermain dan maju",
+                    "Mengurangi interaksi dalam game",
+                    "Menambah tingkat kesulitan musuh"
+                ],
+                answer: 1,
+                hint: "Reward berfungsi sebagai hadiah atau bentuk dorongan motivasi.",
+                explanation: "Reward (seperti item, skin baru, atau pencapaian) memberi alasan kuat bagi pemain untuk terus melanjutkan permainan."
+            },
+            {
+                q: "Di antara pilihan berikut, manakah yang merupakan fungsi utama game selain hiburan (Entertainment)?",
+                options: [
+                    "Pendidikan (Education), Pelatihan (Training), dan Simulasi",
+                    "Memperlambat kinerja komputer",
+                    "Menghilangkan fungsi teknologi informasi",
+                    "Menggantikan seluruh sistem pendidikan formal tanpa guru"
+                ],
+                answer: 0,
+                hint: "Ingat fungsi seperti pembelajaran, latihan skill, serta simulasi.",
+                explanation: "Game memiliki berbagai fungsi luas, di antaranya hiburan, pendidikan, pelatihan keterampilan, simulasi situasi nyata, dan interaksi sosial."
+            },
+            {
+                q: "Apa yang dimaksud dengan 'Serious Game'?",
+                options: [
+                    "Game yang tidak boleh dimainkan oleh anak-anak",
+                    "Game yang dibuat dengan tujuan utama selain hiburan murni, seperti edukasi atau pelatihan",
+                    "Game dengan grafis tiga dimensi yang sangat gelap",
+                    "Game horor yang menakutkan"
+                ],
+                answer: 1,
+                hint: "Fokus utamanya bukan hiburan semata, melainkan ada tujuan instruksional.",
+                explanation: "Serious game adalah game yang dirancang untuk tujuan serius seperti simulasi penerbangan, tanggap bencana, atau pembelajaran khusus."
+            },
+            {
+                q: "Apa bentuk interaksi sosial dalam game multiplayer yang melibatkan kerja sama antar pemain?",
+                options: ["Competitive game", "Cooperative game", "Single-player game", "Offline puzzle"],
+                answer: 1,
+                hint: "Kata kuncinya adalah 'kooperasi' atau 'co-op'.",
+                explanation: "Cooperative game (kooperatif) menuntut pemain bekerja sama untuk mencapai tujuan bersama."
+            },
+            {
+                q: "Jaringan pihak yang saling terhubung dalam penciptaan hingga konsumsi game disebut sebagai...",
+                options: ["Industri Game", "Ekosistem Game", "Platform Holder", "Marketplace Digital"],
+                answer: 1,
+                hint: "Istilah lingkungan yang mencakup seluruh pihak dari awal pembuat hingga pemain.",
+                explanation: "Ekosistem game adalah jaringan pihak yang saling terhubung dalam penciptaan hingga konsumsi game (mulai dari ide hingga dimainkan)."
+            },
+            {
+                q: "Siapakah pihak dalam ekosistem game yang bertugas mendanai dan memasarkan game?",
+                options: ["Game Developer", "Publisher", "Hardware Manufacturer", "Streamer"],
+                answer: 1,
+                hint: "Pihak penerbit yang mengurus pemasaran dan dana modal.",
+                explanation: "Publisher (penerbit) bertanggung jawab mendanai, memproduksi secara massal, dan memasarkan game ke pasaran."
+            },
+            {
+                q: "Manakah urutan tahapan dalam industri game yang paling tepat?",
+                options: [
+                    "Publishing → Testing → Ide & Konsep → Production",
+                    "Ide & Konsep → Pre-production → Production → Testing/QA → Publishing",
+                    "Marketing → Distribution → Ide → Post-launch",
+                    "Production → Konsumsi → Ide → Hapus"
+                ],
+                answer: 1,
+                hint: "Alur selalu dimulai dari Ide/Konsep dan diakhiri Publishing.",
+                explanation: "Tahapan industri game dimulai dari perumusan ide, pre-production (prototipe), production, testing/QA, hingga publishing dan distribusi."
+            },
+            {
+                q: "Model bisnis game di mana pemain membayar sekali di awal untuk memiliki game secara penuh disebut...",
+                options: ["Free-to-Play", "Premium / Buy-to-Play", "In-App Purchase", "Advertising Model"],
+                answer: 1,
+                hint: "Pemain membeli produk terlebih dahulu (Buy-to-Play).",
+                explanation: "Model Premium atau Buy-to-Play mengharuskan pemain membayar di muka untuk membeli dan memiliki game tersebut."
+            },
+            {
+                q: "Platform game apa yang dimainkan langsung melalui browser internet tanpa instalasi berat?",
+                options: ["Console", "Arcade", "Web", "PC Desktop Standalone"],
+                answer: 2,
+                hint: "Dimainkan via peramban seperti Chrome/Firefox.",
+                explanation: "Web game adalah game yang dapat dimainkan langsung di dalam browser web."
+            },
+            {
+                q: "Teknologi apa yang berkembang pesat dan kini turut dimanfaatkan dalam industri game untuk membuat musuh yang lebih cerdas?",
+                options: ["Artificial Intelligence (AI)", "Kalkulator Manual", "Disket 1.44MB", "Kabel Coaxial"],
+                answer: 0,
+                hint: "Kecerdasan Buatan (Artificial Intelligence).",
+                explanation: "Artificial Intelligence (AI) kini banyak digunakan untuk NPC/musuh yang lebih cerdas serta membantu proses pembuatan konten game."
+            }
+        ];
+
+        // Pembolehubah Permainan
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let lives = 3;
+        let playerName = "";
+        let playerNpm = "";
+        let playerClass = "";
+        let answeredCurrent = false;
+
+        // Status Lifelines (Masing-masing hanya bisa digunakan sekali)
+        let lifeline5050Used = false;
+        let lifelineAudienceUsed = false;
+        let lifelineHintUsed = false;
+
+        // Elemen DOM
+        const screenRegistration = document.getElementById('screenRegistration');
+        const screenQuiz = document.getElementById('screenQuiz');
+        const screenResult = document.getElementById('screenResult');
+        const hud = document.getElementById('hud');
+        const progressContainer = document.getElementById('progressContainer');
+        
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const heartsDisplay = document.getElementById('heartsDisplay');
+        const progressDisplay = document.getElementById('progressDisplay');
+        const progressBar = document.getElementById('progressBar');
+        
+        const mapStageInfo = document.getElementById('mapStageInfo');
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const explanationBox = document.getElementById('explanationBox');
+        const explanationText = document.getElementById('explanationText');
+        const nextButton = document.getElementById('nextButton');
+
+        // Lifeline Buttons & Boxes
+        const btnLifeline5050 = document.getElementById('btnLifeline5050');
+        const btnLifelineAudience = document.getElementById('btnLifelineAudience');
+        const btnLifelineHint = document.getElementById('btnLifelineHint');
+        const audienceBox = document.getElementById('audienceBox');
+        const audienceBars = document.getElementById('audienceBars');
+        const hintBox = document.getElementById('hintBox');
+        const hintText = document.getElementById('hintText');
+
+        // Fungsi Memulakan Permainan
+        function startAdventure(e) {
+            e.preventDefault();
+            playerName = document.getElementById('inputName').value.trim();
+            playerNpm = document.getElementById('inputNpm').value.trim();
+            playerClass = document.getElementById('inputClass').value;
+
+            if (!playerName || !playerNpm || !playerClass) {
+                alert("Harap isi Nama, NPM, dan pilih Kelas terlebih dahulu!");
+                return;
+            }
+
+            // Shuffle Soalan
+            currentQuestions = [...questionsBank].sort(() => Math.random() - 0.5);
+            
+            currentIndex = 0;
+            score = 0;
+            lives = 3;
+
+            // Reset Lifeline states
+            lifeline5050Used = false;
+            lifelineAudienceUsed = false;
+            lifelineHintUsed = false;
+            btnLifeline5050.disabled = false;
+            btnLifelineAudience.disabled = false;
+            btnLifelineHint.disabled = false;
+
+            // Transisi Paparan
+            screenRegistration.classList.remove('active');
+            screenQuiz.classList.add('active');
+            hud.style.display = 'flex';
+            progressContainer.style.display = 'block';
+
+            loadQuestion();
+        }
+
+        // Memuatkan Soalan
+        function loadQuestion() {
+            answeredCurrent = false;
+            explanationBox.classList.remove('show');
+            audienceBox.classList.remove('show');
+            hintBox.classList.remove('show');
+            nextButton.style.display = 'none';
+
+            const currentQ = currentQuestions[currentIndex];
+            
+            // Kemas kini HUD & Peta
+            scoreDisplay.textContent = score;
+            heartsDisplay.textContent = '❤️'.repeat(lives) + '🖤'.repeat(3 - lives);
+            progressDisplay.textContent = `${currentIndex + 1} / ${currentQuestions.length}`;
+            progressBar.style.width = `${((currentIndex) / currentQuestions.length) * 100}%`;
+            
+            mapStageInfo.innerHTML = `📍 Pos Petualangan: Pertanyaan ${currentIndex + 1} dari ${currentQuestions.length}`;
+            questionText.textContent = currentQ.q;
+
+            // Jana Pilihan Jawapan
+            optionsContainer.innerHTML = '';
+            currentQ.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.id = `option-${index}`;
+                btn.textContent = `${String.fromCharCode(65 + index)}. ${option}`;
+                btn.onclick = () => selectAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        // --- FITUR BANTUAN (LIFELINES) --- //
+
+        // 1. Lifeline 50:50
+        function use5050() {
+            if (lifeline5050Used || answeredCurrent) return;
+            lifeline5050Used = true;
+            btnLifeline5050.disabled = true;
+
+            const currentQ = currentQuestions[currentIndex];
+            const incorrectIndices = [];
+
+            currentQ.options.forEach((_, idx) => {
+                if (idx !== currentQ.answer) {
+                    incorrectIndices.push(idx);
+                }
+            });
+
+            // Acak & hapus 2 jawaban salah
+            incorrectIndices.sort(() => Math.random() - 0.5);
+            const toHide = incorrectIndices.slice(0, 2);
+
+            toHide.forEach(idx => {
+                const btn = document.getElementById(`option-${idx}`);
+                if (btn) btn.classList.add('hidden-option');
+            });
+        }
+
+        // 2. Lifeline Ask the Audience
+        function useAudience() {
+            if (lifelineAudienceUsed || answeredCurrent) return;
+            lifelineAudienceUsed = true;
+            btnLifelineAudience.disabled = true;
+
+            const currentQ = currentQuestions[currentIndex];
+            const correctIndex = currentQ.answer;
+
+            // Simulasi persentase acak namun realistis (Jawaban benar memiliki kecenderungan dapat persentase lebih tinggi)
+            let percentages = [0, 0, 0, 0];
+            
+            // Tentukan persentase jawaban benar (range 40% - 75%)
+            let correctPercentage = Math.floor(Math.random() * 36) + 40; 
+            percentages[correctIndex] = correctPercentage;
+
+            let remaining = 100 - correctPercentage;
+
+            // Bagi sisa persentase ke opsi lain
+            const otherIndices = [0, 1, 2, 3].filter(i => i !== correctIndex);
+            
+            let p1 = Math.floor(Math.random() * (remaining + 1));
+            remaining -= p1;
+            let p2 = Math.floor(Math.random() * (remaining + 1));
+            let p3 = remaining - p2;
+
+            percentages[otherIndices[0]] = p1;
+            percentages[otherIndices[1]] = p2;
+            percentages[otherIndices[2]] = p3;
+
+            // Tampilkan visual bar
+            audienceBars.innerHTML = '';
+            percentages.forEach((pct, idx) => {
+                const optionLabel = String.fromCharCode(65 + idx);
+                const barItem = document.createElement('div');
+                barItem.className = 'audience-bar-item';
+                barItem.innerHTML = `
+                    <span style="width: 20px; font-weight: bold;">${optionLabel}:</span>
+                    <div class="audience-bar-bg">
+                        <div class="audience-bar-fill" style="width: ${pct}%"></div>
+                    </div>
+                    <span style="width: 35px; text-align: right; font-weight: bold;">${pct}%</span>
+                `;
+                audienceBars.appendChild(barItem);
+            });
+
+            audienceBox.classList.add('show');
+        }
+
+        // 3. Lifeline Hint
+        function useHint() {
+            if (lifelineHintUsed || answeredCurrent) return;
+            lifelineHintUsed = true;
+            btnLifelineHint.disabled = true;
+
+            const currentQ = currentQuestions[currentIndex];
+            hintText.textContent = currentQ.hint || "Pikirkan kata kunci utama dari pertanyaan ini.";
+            hintBox.classList.add('show');
+        }
+
+        // Semak Pilihan Jawapan
+        function selectAnswer(selectedIndex, selectedBtn) {
+            if (answeredCurrent) return;
+            answeredCurrent = true;
+
+            const currentQ = currentQuestions[currentIndex];
+            const allButtons = optionsContainer.querySelectorAll('.option-btn');
+
+            // Nyahaktifkan semua butang selepas membuat pilihan
+            allButtons.forEach(btn => btn.disabled = true);
+
+            if (selectedIndex === currentQ.answer) {
+                // Jawapan Betul: +5 mata
+                selectedBtn.classList.add('correct');
+                score += 5;
+                scoreDisplay.textContent = score;
+            } else {
+                // Jawapan Salah: Nyawa berkurang 1
+                selectedBtn.classList.add('incorrect');
+                allButtons[currentQ.answer].classList.add('correct'); // Tunjukkan jawapan yang betul
+                lives--;
+                heartsDisplay.textContent = '❤️'.repeat(lives) + '🖤'.repeat(3 - lives);
+            }
+
+            // Papar Penjelasan
+            explanationText.textContent = currentQ.explanation;
+            explanationBox.classList.add('show');
+
+            // Semak keadaan tamat permainan (nyawa habis) atau seterusnya
+            if (lives <= 0) {
+                nextButton.textContent = "Lihat Hasil Ekspedisi 🏁";
+            } else if (currentIndex === currentQuestions.length - 1) {
+                nextButton.textContent = "Selesaikan Petualangan 🏆";
+            } else {
+                nextButton.textContent = "Lanjutkan Perjalanan ➡️";
+            }
+
+            nextButton.style.display = 'block';
+        }
+
+        // Butang Seterusnya / Selesai
+        function nextQuestion() {
+            if (lives <= 0) {
+                showResults();
+                return;
+            }
+
+            currentIndex++;
+            if (currentIndex < currentQuestions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // Papar Keputusan Akhir
+        // Papar Keputusan Akhir & Kirim Data ke Google Sheet
+		// Papar Keputusan Akhir & Kirim Data ke Google Sheet
+		function showResults() {
+			screenQuiz.classList.remove('active');
+			screenResult.classList.add('active');
+			hud.style.display = 'none';
+			progressContainer.style.display = 'none';
+
+			document.getElementById('resName').textContent = playerName;
+			document.getElementById('resNpm').textContent = playerNpm;
+			document.getElementById('resClass').textContent = playerClass;
+			document.getElementById('resScore').textContent = `${score} / 100`;
+			document.getElementById('resLives').textContent = '❤️'.repeat(Math.max(0, lives)) + '🖤'.repeat(3 - Math.max(0, lives));
+
+			// Penentuan Predikat Berdasarkan Skor (Skala 0 - 100)
+			const badgeContainer = document.getElementById('resBadgeContainer');
+			let badgeHTML = '';
+
+			if (score >= 90) {
+				badgeHTML = `<span class="badge badge-gold">🌟 Master Game Explorer (Sangat Memuaskan)</span>`;
+			} else if (score >= 70) {
+				badgeHTML = `<span class="badge badge-silver">🥈 Advanced Game Adventurer (Baik)</span>`;
+			} else if (score >= 50) {
+				badgeHTML = `<span class="badge badge-bronze">🥉 Junior Explorer (Cukup)</span>`;
+			} else {
+				badgeHTML = `<span class="badge badge-fail">⚠️ Perlu Mengulang Materi Pertemuan 2</span>`;
+			}
+			badgeContainer.innerHTML = badgeHTML;
+
+			// Elemen Status Simpan
+			const statusDiv = document.getElementById('statusSimpan');
+			statusDiv.style.color = "#4b5563";
+			statusDiv.textContent = "⏳ Menyimpan data ke Google Sheets...";
+
+			// --- KIRIM DATA KE GOOGLE SHEETS ---
+			if (SCRIPT_URL) {
+				const payload = {
+					nama: playerName,
+					npm: playerNpm,
+					kelas: playerClass,
+					skor: score
+				};
+
+				fetch(SCRIPT_URL, {
+					method: 'POST',
+					mode: 'no-cors',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(payload)
+				})
+				.then(() => {
+					// Berhasil terkirim ke server Google Apps Script
+					statusDiv.style.color = "#10b981"; // Warna hijau sukses
+					statusDiv.textContent = "✅ Data Berhasil Disimpan!";
+				})
+				.catch(error => {
+					// Gagal jika ada masalah jaringan atau URL salah
+					console.error("Gagal mengirim data:", error);
+					statusDiv.style.color = "#ef4444"; // Warna merah error
+					statusDiv.textContent = "❌ Data Gagal Disimpan. Periksa koneksi internet!";
+				});
+			} else {
+				statusDiv.style.color = "#ef4444";
+				statusDiv.textContent = "❌ URL Google Script belum diatur!";
+			}
+		}
+
+        // Mula Semula Permainan
+        function restartGame() {
+            screenResult.classList.remove('active');
+            screenRegistration.classList.add('active');
+            document.getElementById('inputName').value = '';
+            document.getElementById('inputNpm').value = '';
+            document.getElementById('inputClass').selectedIndex = 0;
+        }
+    </script>
+</body>
+</html>
